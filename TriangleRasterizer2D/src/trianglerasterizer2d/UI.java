@@ -2,15 +2,18 @@ package trianglerasterizer2d;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.List;
 import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -30,17 +33,16 @@ public class UI {
     
     private JFrame frame;
     private JTextArea logArea;
-    private RenderPanel renderPanel;
+    private Canvas renderPanel;
     private BufferedImage renderImg;
     private Graphics2D renderG;
     private Dimension graphDim;
-    private Stroke normalStroke;
-    private Stroke edgeStroke;
+    
     
     private Rasterizer rasterizer;
     
     public static void main(String[] args) {
-        new UI();
+        new UI().renderLoop();
     }
     
     public UI() {
@@ -50,16 +52,8 @@ public class UI {
         frame.setDefaultCloseOperation(frame.EXIT_ON_CLOSE);
         frame.setResizable(false);
         
-        renderPanel = new RenderPanel();
-        normalStroke = new BasicStroke();
-        edgeStroke = new BasicStroke(2);
+        renderPanel = new Canvas();
         frame.add(renderPanel, BorderLayout.CENTER);
-        
-        logArea = new JTextArea(4, 100);
-        logArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(logArea);
-        scrollPane.setMinimumSize(new Dimension(-1, 200));
-        frame.add(scrollPane, BorderLayout.SOUTH);
         
         Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
         frame.setLocation(screenDim.width / 2 - WIN_WIDTH / 2, screenDim.height / 2 - WIN_HEIGHT / 2);
@@ -70,93 +64,100 @@ public class UI {
         }
         frame.setVisible(true);
         
-        while(true) {
-            renderPanel.repaint();
-            
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-            }
-        }
+        
+        //Create rasterizer
+        graphDim = renderPanel.getSize();
+        renderImg = (BufferedImage)renderPanel.createImage(graphDim.width, graphDim.height);
+        renderG = renderImg.createGraphics();
+        int[] pixelData = ((DataBufferInt)renderImg.getRaster().getDataBuffer()).getData();
+        rasterizer = new Rasterizer(graphDim.width, graphDim.height, pixelData);
+        
     }
+    
+    /**
+     * Do render loop
+     */
+    public void renderLoop() {
+        init();
+        
+        long startTime = System.nanoTime();
+        long currentTime;
+	float lastFps = startTime;
+        int frameCount = 0;
+        float elapsedTime = 0;
+        int framesPerSecond = 0;
+        Graphics g = renderPanel.getGraphics();
+        
+        while(true) {
+
+            //Compute elapsed time and FPS
+            currentTime = System.nanoTime();
+            elapsedTime = (currentTime - startTime) / 1000000000;
+            startTime = currentTime;
+            if(currentTime - lastFps >= 1000000000) {
+		framesPerSecond = frameCount;
+		frameCount = 0;
+		lastFps = currentTime;
+            }
+            frameCount++;
+            
+            //Render
+            render(elapsedTime);
+            
+            //Draw FPS
+            renderG.setColor(Color.BLACK);
+            renderG.drawString("FPS: " + framesPerSecond, 10, 20);
+            
+            //Draw buffer
+            g.drawImage(renderImg, 0, 0, null);
+            
+            
+            Thread.yield();
+	} 
+    }
+    
+    
+    
+    
+    
+    
+    private Vertex[] vertices = new Vertex[2 * 3];
+    
+    
+    /**
+     * Init scene
+     */
+    private void init() {
+        int i = 0;
+        
+        Vector4 red = new Vector4(1, 0, 0, 0);
+        Vector4 green = new Vector4(0, 1, 0, 0);
+        Vector4 blue = new Vector4(0, 0, 1, 0);
+        Vector4 yellow = new Vector4(1, 1, 0, 0);
+        
+        vertices[i++] = new Vertex(new Vector3(300, 400, 0), yellow, new Vector3(), new Vector2());
+        vertices[i++] = new Vertex(new Vector3(300, 100, 0), red, new Vector3(), new Vector2());
+        vertices[i++] = new Vertex(new Vector3(600, 100, 0), green, new Vector3(), new Vector2());
+        
+        vertices[i++] = new Vertex(new Vector3(600, 100, 0), green, new Vector3(), new Vector2());
+        vertices[i++] = new Vertex(new Vector3(600, 400, 0), blue, new Vector3(), new Vector2());
+        vertices[i++] = new Vertex(new Vector3(300, 400, 0), yellow, new Vector3(), new Vector2());
+    }
+    
     
     /**
      * Main render method
      */
-    private void render(Graphics2D g) {
-        int[] renderBuffer = rasterizer.render();
-        renderImg.setRGB(0, 0, rasterizer.getScreenWidth(), rasterizer.getScreenHeight(), renderBuffer, 0, rasterizer.getScreenWidth());
-    }
-    
-    private void onMouseClicked(int x, int y) {
+    private void render(float elapsedTime) {
+        rasterizer.clear(Rasterizer.WHITE);
+        
+        for (int i = 0; i < vertices.length; i += 3) {
+            rasterizer.drawTriangle(vertices[i], vertices[i + 1], vertices[i + 2]);
+        }
+        
+
         
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /**
-     * Render panel
-     */
-    private class RenderPanel extends JPanel implements MouseListener {
-        
-        public RenderPanel() {
-            addMouseListener(this);
-            setDoubleBuffered(false);
-        }
-        
-        @Override
-        public void paint(Graphics g){
-                update(g);
-	}
-        
-        @Override
-        public void update(Graphics g) {
-            
-            if(renderImg == null) {
-                graphDim = getSize();
-                renderImg = (BufferedImage)createImage(graphDim.width, graphDim.height);
-                renderG = renderImg.createGraphics();
-                rasterizer = new Rasterizer(graphDim.width, graphDim.height);
-            }
-            
-            renderG.setPaint(Color.WHITE);
-            renderG.fillRect(0, 0, graphDim.width, graphDim.height);
-            
-            render(renderG);
-            
-            g.drawImage(renderImg, 0, 0, this);
-        }
 
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            onMouseClicked(e.getX(), e.getY());
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-        }
-    }
-    
 }

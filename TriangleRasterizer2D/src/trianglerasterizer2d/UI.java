@@ -92,7 +92,7 @@ public class UI {
 
             //Compute elapsed time and FPS
             currentTime = System.nanoTime();
-            elapsedTime = (currentTime - startTime) / 1000000000;
+            elapsedTime = (currentTime - startTime) / 1000000000.0f;
             startTime = currentTime;
             if(currentTime - lastFps >= 1000000000) {
 		framesPerSecond = frameCount;
@@ -120,8 +120,11 @@ public class UI {
     
     
     
-    
+    //Scene data
     private Vertex[] vertices = new Vertex[2 * 3];
+    private int sizeCount = 0;
+    private float sizeSpeed = 100;
+    private float dir = 1;
     
     
     /**
@@ -151,6 +154,34 @@ public class UI {
     private void render(float elapsedTime) {
         rasterizer.clear(Rasterizer.WHITE);
         
+        //Change size
+        sizeCount++;
+        if(sizeCount > 120) {
+            sizeCount = 0;
+            dir *= -1;
+        }
+        float change = sizeSpeed * elapsedTime;
+        
+        vertices[1].position.X += change * -dir;
+        vertices[1].position.Y += change * -dir;
+        
+        vertices[2].position.X += change * dir;
+        vertices[2].position.Y += change * -dir;
+        vertices[3].position.X += change * dir;
+        vertices[3].position.Y += change * -dir;
+        
+        vertices[0].position.X += change * -dir;
+        vertices[0].position.Y += change * dir;
+        vertices[5].position.X += change * -dir;
+        vertices[5].position.Y += change * dir;
+        
+        vertices[4].position.X += change * dir;
+        vertices[4].position.Y += change * dir;
+        
+        
+        
+        
+        //Render triangles
         for (int i = 0; i < vertices.length; i += 3) {
             rasterizer.drawTriangle(vertices[i], vertices[i + 1], vertices[i + 2]);
         }

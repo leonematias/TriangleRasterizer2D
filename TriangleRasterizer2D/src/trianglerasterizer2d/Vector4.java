@@ -45,5 +45,21 @@ public class Vector4 {
         W *= s;
         return this;
     }
+    
+    public static Vector4 interpolate(Vector4 v1, float s1, Vector4 v2, float s2, Vector4 out) {
+        out.X = v1.X * s1 + v2.X * s2;
+        out.Y = v1.Y * s1 + v2.Y * s2;
+        out.Z = v1.Z * s1 + v2.Z * s2;
+        out.W = v1.W * s1 + v2.W * s2;
+        return out;
+    }
+    
+    public static Vector4 interpolate(Vector4 v1, float s1, Vector4 v2, float s2, Vector4 v3, float s3, Vector4 out) {
+        out.X = v1.X * s1 + v2.X * s2 + v3.X * s3;
+        out.Y = v1.Y * s1 + v2.Y * s2 + v3.Y * s3;
+        out.Z = v1.Z * s1 + v2.Z * s2 + v3.Z * s3;
+        out.W = v1.W * s1 + v2.W * s2 + v3.W * s3;
+        return out;
+    }
 
 }

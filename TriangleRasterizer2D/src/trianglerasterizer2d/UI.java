@@ -156,7 +156,7 @@ public class UI {
         
         //Change size
         sizeCount++;
-        if(sizeCount > 120) {
+        if(sizeCount > 420) {
             sizeCount = 0;
             dir *= -1;
         }
@@ -185,8 +185,6 @@ public class UI {
         for (int i = 0; i < vertices.length; i += 3) {
             rasterizer.drawTriangle(vertices[i], vertices[i + 1], vertices[i + 2]);
         }
-        
-
         
     }
     

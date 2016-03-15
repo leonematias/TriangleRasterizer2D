@@ -12,6 +12,13 @@ public class Vertex {
     public Vector3 normal;
     public Vector2 texCoord;
 
+    public Vertex() {
+        this.position = new Vector3();
+        this.color = new Vector4();
+        this.normal = new Vector3();
+        this.texCoord = new Vector2();
+    }
+    
     public Vertex(Vector3 position, Vector4 color, Vector3 normal, Vector2 texCoord) {
         this.position = position;
         this.color = color;

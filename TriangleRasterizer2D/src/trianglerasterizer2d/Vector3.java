@@ -53,6 +53,20 @@ public class Vector3 {
         return out;
     }
     
+    public static Vector3 interpolate(Vector3 v1, float s1, Vector3 v2, float s2, Vector3 out) {
+        out.X = v1.X * s1 + v2.X * s2;
+        out.Y = v1.Y * s1 + v2.Y * s2;
+        out.Z = v1.Z * s1 + v2.Z * s2;
+        return out;
+    }
+    
+    public static Vector3 interpolate(Vector3 v1, float s1, Vector3 v2, float s2, Vector3 v3, float s3, Vector3 out) {
+        out.X = v1.X * s1 + v2.X * s2 + v3.X * s3;
+        out.Y = v1.Y * s1 + v2.Y * s2 + v3.Y * s3;
+        out.Z = v1.Z * s1 + v2.Z * s2 + v3.Z * s3;
+        return out;
+    }
+    
     public Vector3 add(float s) {
         X += s;
         Y += s;

@@ -1,7 +1,9 @@
 package trianglerasterizer2d;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -15,6 +17,7 @@ public class Rasterizer {
     private int screenWidth;
     private int screenHeight;
     private int[] renderBuffer;
+    private TriangleClipping clipping;
     
     private Vector2 barycentric;
     private Vector4 vColor;
@@ -23,12 +26,20 @@ public class Rasterizer {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.renderBuffer = renderBuffer;
+        this.clipping = new TriangleClipping(screenWidth, screenHeight);
         
         barycentric = new Vector2();
         vColor = new Vector4();
     }
 
     public void drawTriangle(Vertex a, Vertex b, Vertex c) {
+        TriangleClipping.Result res = clipping.clip(a, b, c);
+        for (int i = 0; i < res.trianglesCount; i++) {
+            doDrawTriangle(res.vertexList[i * 3], res.vertexList[i * 3 + 1], res.vertexList[i * 3 + 2]);
+        }
+    }
+    
+    private void doDrawTriangle(Vertex a, Vertex b, Vertex c) {
         //Compute triangle's bounding box
         int xMin = (int)min(a.position.X, b.position.X, c.position.X);
         int xMax = (int)max(a.position.X, b.position.X, c.position.X);
@@ -52,12 +63,15 @@ public class Rasterizer {
                     float barZ = 1 - barycentric.X - barycentric.Y;
                     
                     //Gouraud shading
+                    /*
                     vColor.set(
                             barycentric.X * a.color.X + barycentric.Y * b.color.X + barZ * c.color.X,
                             barycentric.X * a.color.Y + barycentric.Y * b.color.Y + barZ * c.color.Y,
                             barycentric.X * a.color.Z + barycentric.Y * b.color.Z + barZ * c.color.Z,
                             barycentric.X * a.color.W + barycentric.Y * b.color.W + barZ * c.color.W
                     );
+                    */
+                    Vector4.interpolate(a.color, barycentric.X, b.color, barycentric.Y, c.color, barZ, vColor);
                     int color = vector4ToAWTColor(vColor);
                     
                     
@@ -129,6 +143,8 @@ public class Rasterizer {
         int a = (int)(v.W * 255);
         return ((a & 0xFF) << 24) |((r & 0xFF) << 16) | ((g & 0xFF) << 8)  | ((b & 0xFF) << 0);
     }
+    
+
     
     
 }

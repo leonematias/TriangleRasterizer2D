@@ -29,5 +29,12 @@ public class Vertex {
     public Vertex(float x, float y, float z, float r, float g, float b, float a, float nx, float ny, float nz, float u, float v) {
         this(new Vector3(x, y, z), new Vector4(r, g, b, a), new Vector3(nx, ny, nz), new Vector2(u, v));
     }
+
+    @Override
+    public String toString() {
+        return position.toString();
+    }
+    
+    
     
 }

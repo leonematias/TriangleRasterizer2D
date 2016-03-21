@@ -107,5 +107,12 @@ public class Vector3 {
         if(i == 2) return Z;
         throw new IndexOutOfBoundsException("Invalid index: " + i);
     }
+
+    @Override
+    public String toString() {
+        return "(" + X + ", " + Y + ", " + Z + ")";
+    }
+    
+    
     
 }

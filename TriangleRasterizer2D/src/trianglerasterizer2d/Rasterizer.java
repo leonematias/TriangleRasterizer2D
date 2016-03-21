@@ -46,9 +46,11 @@ public class Rasterizer {
         int yMin = (int)min(a.position.Y, b.position.Y, c.position.Y);
         int yMax = (int)max(a.position.Y, b.position.Y, c.position.Y);
         
+        /*
         //Clipping
         if(xMin < 0 || yMin < 0 || xMax >= screenWidth || yMax >= screenHeight)
             return;
+        */
         
         //Scan line rendering
         int index = 0;

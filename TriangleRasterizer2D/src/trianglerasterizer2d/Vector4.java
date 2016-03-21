@@ -61,5 +61,10 @@ public class Vector4 {
         out.W = v1.W * s1 + v2.W * s2 + v3.W * s3;
         return out;
     }
+    
+    @Override
+    public String toString() {
+        return "(" + X + ", " + Y + ", " + Z + ", " + W + ")";
+    }
 
 }

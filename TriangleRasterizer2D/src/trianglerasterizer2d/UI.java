@@ -125,6 +125,7 @@ public class UI {
     private int sizeCount = 0;
     private float sizeSpeed = 100;
     private float dir = 1;
+    private Triangle triangle;
     
     
     /**
@@ -145,6 +146,13 @@ public class UI {
         vertices[i++] = new Vertex(new Vector3(600, 100, 0), green, new Vector3(), new Vector2());
         vertices[i++] = new Vertex(new Vector3(600, 400, 0), blue, new Vector3(), new Vector2());
         vertices[i++] = new Vertex(new Vector3(300, 400, 0), yellow, new Vector3(), new Vector2());
+        
+        
+        triangle = new Triangle(
+                new Vector3(500, 0, 0), new Vector4(1, 0, 0, 1),
+                new Vector3(WIN_WIDTH + 200, 500, 0), new Vector4(0, 1, 0, 1),
+                new Vector3(500, 500, 0), new Vector4(0, 0, 1, 1)
+        );
     }
     
     
@@ -154,9 +162,10 @@ public class UI {
     private void render(float elapsedTime) {
         rasterizer.clear(Rasterizer.WHITE);
         
+
         //Change size
         sizeCount++;
-        if(sizeCount > 420) {
+        if(sizeCount > 350) {
             sizeCount = 0;
             dir *= -1;
         }
@@ -186,7 +195,29 @@ public class UI {
             rasterizer.drawTriangle(vertices[i], vertices[i + 1], vertices[i + 2]);
         }
         
+        
+        //rasterizer.drawTriangle(triangle.a, triangle.b, triangle.c);
+        
     }
     
+    private class Triangle {
+        public Vertex a;
+        public Vertex b;
+        public Vertex c;
+
+        public Triangle(Vertex a, Vertex b, Vertex c) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+        }
+        
+        public Triangle(Vector3 aPos, Vector4 aColor, Vector3 bPos, Vector4 bColor, Vector3 cPos, Vector4 cColor) {
+            this(
+                    new Vertex(aPos, aColor, new Vector3(), new Vector2()),
+                    new Vertex(bPos, bColor, new Vector3(), new Vector2()),
+                    new Vertex(cPos, cColor, new Vector3(), new Vector2())
+            );
+        }
+    }
 
 }

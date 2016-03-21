@@ -8,7 +8,7 @@ import java.util.Arrays;
  */
 public class TriangleClipping {
     
-    private final static int MAX_VERT = 6;
+    private final static int MAX_VERT = 10;
     private final static int MAX_TRI = 4;
     
     private float maxX;
@@ -172,14 +172,17 @@ public class TriangleClipping {
         float dy = v2.position.Y - v1.position.Y;
         
         //Edge equation: y = a * x + b
-        float a = 0;
+        float y = 0;
         if(dx != 0) {
-            a = dy / dx;
-        }
-        float b = v1.position.Y - a * v1.position.X;
+            float a = dy / dx;
+            float b = v1.position.Y - a * v1.position.X;
         
-        //Compute y for the given x
-        float y = a * x + b;
+            //Compute y for the given x
+            y = a * x + b;
+            
+        } else {
+            throw new RuntimeException("Invalid dx: " + dx);
+        }
         
         //Interpolate values in intersection point
         return interpolate(v1, v2, x, y, out);
@@ -191,13 +194,22 @@ public class TriangleClipping {
         
         //Edge equation: y = a * x + b
         float a = 0;
+        float b = 0;
+        float x = 0;
         if(dx != 0) {
             a = dy / dx;
+            b = v1.position.Y - a * v1.position.X;
+            
+            //Compute x for the given y
+            x = y - b;
+            if(a != 0) {
+                x /= a;
+            }
+        } else {
+            x = v1.position.X;
         }
-        float b = v1.position.Y - a * v1.position.X;
         
-        //Compute x for the given y
-        float x = (y - b) / a;
+        
         
         //Interpolate values in intersection point
         return interpolate(v1, v2, x, y, out);
@@ -206,7 +218,7 @@ public class TriangleClipping {
     private Vertex interpolate(Vertex v1, Vertex v2, float interX, float interY ,Vertex out) {
         //Compute barycentric on edge
         float length = Vector2.length(v1.position.X, v1.position.Y, v2.position.X, v2.position.Y);
-        float lengthV1 =  Vector2.length(v1.position.X, interX, v1.position.Y, interY);
+        float lengthV1 =  Vector2.length(v1.position.X, v1.position.Y, interX, interY);
         float s1 = lengthV1 / length;
         float s2 = 1 - s1;
         

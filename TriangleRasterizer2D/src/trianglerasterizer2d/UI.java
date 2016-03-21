@@ -134,10 +134,10 @@ public class UI {
     private void init() {
         int i = 0;
         
-        Vector4 red = new Vector4(1, 0, 0, 0);
-        Vector4 green = new Vector4(0, 1, 0, 0);
-        Vector4 blue = new Vector4(0, 0, 1, 0);
-        Vector4 yellow = new Vector4(1, 1, 0, 0);
+        Vector4 red = new Vector4(1, 0, 0, 1);
+        Vector4 green = new Vector4(0, 1, 0, 1);
+        Vector4 blue = new Vector4(0, 0, 1, 1);
+        Vector4 yellow = new Vector4(1, 1, 0, 1);
         
         vertices[i++] = new Vertex(new Vector3(300, 400, 0), yellow, new Vector3(), new Vector2());
         vertices[i++] = new Vertex(new Vector3(300, 100, 0), red, new Vector3(), new Vector2());

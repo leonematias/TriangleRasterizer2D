@@ -23,7 +23,7 @@ public class Vector4 {
         this.X = X;
         this.Y = Y;
         this.Z = Z;
-        this.W = 0;
+        this.W = W;
     }
     
     public Vector4 set(float X, float Y, float Z, float W) {

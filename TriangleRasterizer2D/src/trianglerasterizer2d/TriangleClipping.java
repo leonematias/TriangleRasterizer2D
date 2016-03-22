@@ -1,6 +1,7 @@
 package trianglerasterizer2d;
 
 import java.util.Arrays;
+import static trianglerasterizer2d.Rasterizer.computeBarycentric;
 
 /**
  *
@@ -20,7 +21,9 @@ public class TriangleClipping {
     private int outId;
     private int auxId;
     private Result result;
-    
+    private Vector3 barycentric;
+
+        
     private enum ClipEdge {LEFT, TOP, RIGHT, BOTTOM}
 
     public TriangleClipping(float maxX, float maxY) {
@@ -34,18 +37,11 @@ public class TriangleClipping {
             this.auxVertexList[i] = new Vertex();
         }
         this.result = new Result();
+        this.barycentric = new Vector3();
     }
 
     
-    public Result clip(Vertex a, Vertex b, Vertex c) {
-        /*
-        result.trianglesCount = 1;
-        result.vertexList[0] = a;
-        result.vertexList[1] = b;
-        result.vertexList[2] = c;
-        return result;
-        */
-        
+    public Result clip(Vertex a, Vertex b, Vertex c) {        
         auxId = 0;
         outId = resetList(outputList);
         outputList[0] = a;
@@ -75,55 +71,11 @@ public class TriangleClipping {
         }
         
         //Split into many triangles
-        if(outId == 3) {
-            result.trianglesCount = 1;
-            result.vertexList[0] = outputList[0];
-            result.vertexList[1] = outputList[1];
-            result.vertexList[2] = outputList[2];
-            
-        } else if(outId == 4) {
-            result.trianglesCount = 2;
-            result.vertexList[0] = outputList[0];
-            result.vertexList[1] = outputList[1];
-            result.vertexList[2] = outputList[2];
-            
-            result.vertexList[3] = outputList[0];
-            result.vertexList[4] = outputList[2];
-            result.vertexList[5] = outputList[3];
-            
-        } else if(outId == 5) {
-            result.trianglesCount = 3;
-            result.vertexList[0] = outputList[0];
-            result.vertexList[1] = outputList[1];
-            result.vertexList[2] = outputList[2];
-            
-            result.vertexList[3] = outputList[0];
-            result.vertexList[4] = outputList[2];
-            result.vertexList[5] = outputList[3];
-            
-            result.vertexList[6] = outputList[0];
-            result.vertexList[7] = outputList[3];
-            result.vertexList[8] = outputList[4];
-            
-        } else if(outId == 6) {
-            result.trianglesCount = 4;
-            
-            result.trianglesCount = 3;
-            result.vertexList[0] = outputList[0];
-            result.vertexList[1] = outputList[1];
-            result.vertexList[2] = outputList[2];
-            
-            result.vertexList[3] = outputList[0];
-            result.vertexList[4] = outputList[2];
-            result.vertexList[5] = outputList[3];
-            
-            result.vertexList[6] = outputList[0];
-            result.vertexList[7] = outputList[3];
-            result.vertexList[8] = outputList[4];
-            
-            result.vertexList[9] = outputList[0];
-            result.vertexList[10] = outputList[4];
-            result.vertexList[11] = outputList[5];
+        tesselatte();
+        
+        //Interpolate vertex values        
+        for (int i = 0; i < outId; i++) {
+            interpolate(result.vertexList[i], a, b, c);
         }
         
         return result;
@@ -184,8 +136,14 @@ public class TriangleClipping {
             throw new RuntimeException("Invalid dx: " + dx);
         }
         
+        out.position.X = x;
+        out.position.Y = y;
+        return out;
+        
+        /*
         //Interpolate values in intersection point
         return interpolate(v1, v2, x, y, out);
+        */
     }
     
     private Vertex intersectY(Vertex v1, Vertex v2, float y, Vertex out) {
@@ -209,10 +167,30 @@ public class TriangleClipping {
             x = v1.position.X;
         }
         
+        out.position.X = x;
+        out.position.Y = y;
+        return out;
         
-        
+        /*
         //Interpolate values in intersection point
         return interpolate(v1, v2, x, y, out);
+                */
+    }
+    
+    private void interpolate(Vertex v, Vertex a, Vertex b, Vertex c) {
+        computeBarycentric(a.position.X, a.position.Y, b.position.X, b.position.Y, c.position.X, c.position.Y, v.position.X, v.position.Y, barycentric);
+        
+        //TODO: interpolate Z
+        v.position.Z = 0;
+        
+        //Interpolate color
+        Vector4.interpolate(a.color, barycentric.X, b.color, barycentric.Y, c.color, barycentric.Z, v.color);
+        
+        //Interpolate normal
+        Vector3.interpolate(a.normal, barycentric.X, b.normal, barycentric.Y, c.normal, barycentric.Z, v.normal);
+        
+        //Interpolate texCoord
+        Vector2.interpolate(a.texCoord, barycentric.X, b.texCoord, barycentric.Y, c.texCoord, barycentric.Z, v.texCoord);
     }
     
     private Vertex interpolate(Vertex v1, Vertex v2, float interX, float interY ,Vertex out) {
@@ -237,6 +215,59 @@ public class TriangleClipping {
         Vector2.interpolate(v1.texCoord, s1, v2.texCoord, s2, out.texCoord);
         
         return out;
+    }
+    
+    private void tesselatte() {
+        if(outId == 3) {
+            result.trianglesCount = 1;
+            result.vertexList[0] = outputList[0];
+            result.vertexList[1] = outputList[1];
+            result.vertexList[2] = outputList[2];
+            
+        } else if(outId == 4) {
+            result.trianglesCount = 2;
+            result.vertexList[0] = outputList[0];
+            result.vertexList[1] = outputList[1];
+            result.vertexList[2] = outputList[2];
+            
+            result.vertexList[3] = outputList[0];
+            result.vertexList[4] = outputList[2];
+            result.vertexList[5] = outputList[3];
+            
+        } else if(outId == 5) {
+            result.trianglesCount = 3;
+            result.vertexList[0] = outputList[0];
+            result.vertexList[1] = outputList[1];
+            result.vertexList[2] = outputList[2];
+            
+            result.vertexList[3] = outputList[0];
+            result.vertexList[4] = outputList[2];
+            result.vertexList[5] = outputList[3];
+            
+            result.vertexList[6] = outputList[0];
+            result.vertexList[7] = outputList[3];
+            result.vertexList[8] = outputList[4];
+            
+        } else if(outId == 6) {
+            result.trianglesCount = 4;
+            
+            result.trianglesCount = 3;
+            result.vertexList[0] = outputList[0];
+            result.vertexList[1] = outputList[1];
+            result.vertexList[2] = outputList[2];
+            
+            result.vertexList[3] = outputList[0];
+            result.vertexList[4] = outputList[2];
+            result.vertexList[5] = outputList[3];
+            
+            result.vertexList[6] = outputList[0];
+            result.vertexList[7] = outputList[3];
+            result.vertexList[8] = outputList[4];
+            
+            result.vertexList[9] = outputList[0];
+            result.vertexList[10] = outputList[4];
+            result.vertexList[11] = outputList[5];
+        }
     }
     
     public static class Result {

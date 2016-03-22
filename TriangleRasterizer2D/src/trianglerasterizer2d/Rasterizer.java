@@ -19,7 +19,7 @@ public class Rasterizer {
     private int[] renderBuffer;
     private TriangleClipping clipping;
     
-    private Vector2 barycentric;
+    private Vector3 barycentric;
     private Vector4 vColor;
     
     public Rasterizer(int screenWidth, int screenHeight, int[] renderBuffer) {
@@ -28,7 +28,7 @@ public class Rasterizer {
         this.renderBuffer = renderBuffer;
         this.clipping = new TriangleClipping(screenWidth, screenHeight);
         
-        barycentric = new Vector2();
+        barycentric = new Vector3();
         vColor = new Vector4();
     }
 
@@ -62,7 +62,6 @@ public class Rasterizer {
                 
                 //Inside triangle
                 if((barycentric.X >= 0) && (barycentric.Y >= 0) && (barycentric.X + barycentric.Y <= 1)) {
-                    float barZ = 1 - barycentric.X - barycentric.Y;
                     
                     //Gouraud shading
                     /*
@@ -73,7 +72,7 @@ public class Rasterizer {
                             barycentric.X * a.color.W + barycentric.Y * b.color.W + barZ * c.color.W
                     );
                     */
-                    Vector4.interpolate(a.color, barycentric.X, b.color, barycentric.Y, c.color, barZ, vColor);
+                    Vector4.interpolate(a.color, barycentric.X, b.color, barycentric.Y, c.color, barycentric.Z, vColor);
                     int color = vector4ToAWTColor(vColor);
                     
                     
@@ -107,7 +106,7 @@ public class Rasterizer {
         return Math.max(Math.max(a, b), c);
     }
     
-    private Vector2 computeBarycentric(float v1x, float v1y, float v2x, float v2y, float v3x, float v3y , float px, float py, Vector2 out) {
+    public static Vector3 computeBarycentric(float v1x, float v1y, float v2x, float v2y, float v3x, float v3y , float px, float py, Vector3 out) {
 	float A = v1x - v3x;
 	float B = v2x - v3x;
 	float C = v3x - px;
@@ -135,6 +134,7 @@ public class Rasterizer {
 	}
 	out.X = (B*(F+I) - C*(E+H)) / (A*(E+H) - B*(D+G));
 	out.Y = (A*(F+I) - C*(D+G)) / (B*(D+G) - A*(E+H));
+        out.Z = 1 - out.X - out.Y;
 	return out;
     }
     
